@@ -1,0 +1,40 @@
+---
+title: "FML_ASSIG-1"
+author: "MICHAEL BALLAMUDI"
+date: "2023-09-11"
+output: pdf_document
+---
+
+##source of my data set:
+https://www.kaggle.com/datasets/rukenmissonnier/age-weight-height-bmi-analysis
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Importing Data set into R
+```{r}
+library(readxl)
+bmi <- read_excel("C:/Users/micha/Downloads/bmi.xlsx")
+View(bmi)
+```  
+
+#The descriptive statistics for the Dataset 
+```{r}
+summary(bmi)
+```
+
+#Transforming of Age in quantitative 
+```{r}
+bmi$Age <- log(bmi$Weight)
+summary(bmi$Age)
+```
+
+#Scatterplot of Bmi for the people
+```{r}
+plot(bmi$Age,bmi$Bmi,
+     main="Scatterplot of age with BMI",
+     xlab = "Age",
+     ylab = "BMI",
+     col = "blue")
+```
