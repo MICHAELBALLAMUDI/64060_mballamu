@@ -1,0 +1,239 @@
+---
+title: "Assignment_4 FML"
+author: "MICHAEL BALLAMUDI"
+date: "2023-11-13"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+#Applying the knit functions
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#Reading the data set and loading the data and transforming data.
+```{r}
+Pharmaceuticals <- read.csv("C:/Users/micha/OneDrive/Desktop/SEM_1/FML/Pharmaceuticals.csv")
+View(Pharmaceuticals)
+
+```
+
+#loading the required package
+```{r}
+library(tidyverse)
+```
+
+#loading the required package 
+```{r}
+library(factoextra)
+
+```
+
+
+#loading the required package
+```{r}
+library(ISLR)
+
+library(flexclust)
+
+```
+
+#loading the required package
+```{r}
+library(caret)
+```
+
+```{r}
+Scaled_pharma_data <- scale(Pharmaceuticals[,3:11])
+summary(Scaled_pharma_data)
+
+```
+
+
+```{r}
+#Performing range scaling for the the dataframe 
+range_pharma_data <- scale(Pharmaceuticals[,3:11])
+#summarizing the scaled data frame
+summary(range_pharma_data)
+```
+
+
+```{r}
+#calculating the distance of the scaled pharmaceuticals data
+distance <- get_dist(Scaled_pharma_data)
+fviz_dist(distance) #visualizing the distance between rows of the distance 
+matrix
+```
+
+
+```{r}
+#applying K-means clustering for the scaled data
+kmeans_1 <- kmeans(Scaled_pharma_data, centers = 5, nstart = 25)
+#visualizing the clusters on agraph
+fviz_cluster(kmeans_1, data = Scaled_pharma_data)
+```
+
+
+```{r}
+print(kmeans_1)
+```
+
+
+```{r}
+#plotting the number of clusters vs the total value
+fviz_nbclust(Scaled_pharma_data, kmeans, method = "wss")
+```
+
+
+```{r}
+#figuring ou the number of optimal clusters by plotting the number of 
+clusters
+#against average silhoutte width
+fviz_nbclust(Scaled_pharma_data, kmeans, method = "silhouette")
+
+```
+
+
+```{r}
+#Calculating the mean value from the actual data that is plotted in the 
+clusters
+#perfroming the aggregate function for the pharma data
+aggregate(Pharmaceuticals[3:11], by=list(cluster=kmeans_1$cluster), mean)
+```
+
+
+```{r}
+#perfroming the merging of the data frames using cbind
+temp_data <- cbind(Pharmaceuticals, cluster = kmeans_1$cluster)
+tibble(temp_data)
+
+```
+
+
+```{r}
+#Summarizing the detailed beakdown by cluster
+by(temp_data, factor(temp_data$cluster), summary)
+
+```
+
+
+```{r}
+#median calculation 
+recommend_table <- table(temp_data$cluster, temp_data$Median_Recommendation)
+names(dimnames(recommend_table)) <- c("Cluster", "Recommendation")
+recommend_table <- addmargins(recommend_table)
+recommend_table
+```
+
+
+```{r}
+#Location of firm headquarter's breakdown of clusters based on the merged 
+data
+location_table <- table(temp_data$cluster, temp_data$Location)
+names(dimnames(location_table)) <- c("Cluster", "Location")
+location_table <- addmargins(location_table)
+location_table
+```
+
+
+```{r}
+#Location of firm headquarter's breakdown of clusters based on the merged 
+data
+location_table <- table(temp_data$cluster, temp_data$Location)
+names(dimnames(location_table)) <- c("Cluster", "Location")
+location_table <- addmargins(location_table)
+location_table
+```
+
+
+```{r}
+#summarizing the stock exchange values for each cluster
+#creating a data frame for the merged data and initializing the exchange 
+table
+exchange_table <- table(temp_data$cluster, temp_data$Exchange)
+names(dimnames(exchange_table)) <- c("Cluster", "Exchange")
+exchange_table <- addmargins(exchange_table)
+exchange_table
+```
+
+##There are 21 companies overall, divided into 1 Amex, 1 Nasdaq, and 19 NYSE. Cluster 5 
+just has the NYSE. All three are in Cluster 2. clusters 1,3,4 all contains only NYSE.
+##Question d - Provide an appropriate name for each cluster using any or all of the 
+variables in the dataset.
+Answer :- Cluster 1: - The cluster 3 can be named as “Small_Net_Profit_Margin-High PE 
+ratio”. All are NAM companies.
+Cluster 2: The cluster number 2 can be named “Low_Market_Cap & Less_ROA” - Hold or Buy 
+exchanges
+Cluster 3: The cluster 4 can be named “High Market Cap - more RoE - more RoA- High Asset 
+Turnover- more NetProfitMargin” - All are the Hold or Buy US companies that are part of 
+NYSE
+Cluster 4: The cluster 4 can be named as “least PE ratio & low RoE & Minimum Asset 
+Turnover- High revenue growth - mixed recommendation. All are US or European 
+companies that belongs to NYSE.
+Cluster 5: The cluster number 5 can be named as “Least_Revenue_growth”. It mostly 
+comprised of US companies and all are NYSE.
+##Also Trying or Exploring the other algorithms whether they can perform better 
+clustering or not? -
+
+
+
+```{r}
+fviz_nbclust(range_pharma_data, FUN = kmeans, method = "silhouette")
+
+```
+
+
+```{r}
+fviz_nbclust(range_pharma_data, kmeans, method = "wss")
+```
+
+
+Plotting the K means and clusters 
+
+```{r}
+kmeans_2 = kcca(Scaled_pharma_data, k=5, kccaFamily("kmeans"))
+kmeans_2
+```
+
+
+```{r}
+clusters(kmeans_2) 
+```
+
+
+```{r}
+#Applying the predict() function
+clusters_index <- predict(kmeans_2)
+image(kmeans_2)
+points(Scaled_pharma_data, col=clusters_index, pch=19, cex=1.0)
+```
+
+##Here, we execute a kmeans cluster on k = 5 using the kcca algorithm rather than the 
+kmeans function from base R. The clustering has the same size but different assignment 
+between points compared to base R approach. The clustering graph demonstrates that the 
+clustering is not as clear-cut as we would like, particularly between clusters 1, 2 and 3
+
+
+```{r}
+kmeans_2 = kcca(Scaled_pharma_data, k=5, kccaFamily("kmedians"))
+kmeans_2
+
+```
+
+```{r}
+clusters(kmeans_2) #clusteing
+
+```
+
+```{r}
+clusters_index <- predict(kmeans_2)
+image(kmeans_2)
+points(Scaled_pharma_data, col=clusters_index, pch=19, cex=1.0)
+
+
+```
+
+## if we change from kmeans to kmedian in kcca, the five clusters’ sizes are 4, 5, 3, 3, and 6. Yet, the clustering is not as obvious. We are investigating the extra data to determine if there are any better techniques or tools we can use to enhance the visual cluster, but it is unclear whether a better cluster actually exists.
